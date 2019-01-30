@@ -8,11 +8,13 @@ import (
 	"time"
 )
 
+// ErrInvalidInput is a set error message for when the input to a function is invalid.
 var ErrInvalidInput = errors.New("invalid input")
 
 var dateRegex = regexp.MustCompile(`^\d{2}(\d{1})(\d{1})-(\d{2})-(\d{2})$`)
 var dlnRegex = regexp.MustCompile(`^[A-Z]{1,5}9{0,4}\d(?:[05][1-9]|[16][0-2])(?:0[1-9]|[12]\d|3[01])\d(?:99|[A-Z][A-Z9])[A-HJ-NPR-X2-9][A-Z]{2}$`)
 
+// UserDetails contains the set of details about a user that can be converted to and from a driving license number.
 type UserDetails struct {
 	PersonalName string
 	FamilyName   string
@@ -20,6 +22,7 @@ type UserDetails struct {
 	BirthDate    string
 }
 
+// Generate a DLN from a set of user details.
 func Generate(userDetails UserDetails, includeMiddleName bool) (string, error) {
 	sectA, err := generateSectionA(userDetails.FamilyName)
 	if err != nil {
@@ -36,6 +39,7 @@ func Generate(userDetails UserDetails, includeMiddleName bool) (string, error) {
 	return fmt.Sprintf("%s%s%s", sectA, sectB, sectC), nil
 }
 
+// Validate a DLN and set of user details match.
 func Validate(dln string, userDetails UserDetails, checkMiddleName bool) (bool, error) {
 	subDLN, err := Generate(userDetails, checkMiddleName)
 
@@ -46,6 +50,7 @@ func Validate(dln string, userDetails UserDetails, checkMiddleName bool) (bool, 
 	return subDLN == dln[:len(subDLN)], nil
 }
 
+// Parse a DLN string into a userDetails struct, it will loose data though.
 func Parse(dln string, includeMiddleName bool) (*UserDetails, error) {
 	if dln == "" || len(dln) != 16 || !dlnRegex.MatchString(dln) {
 		return nil, ErrInvalidInput
